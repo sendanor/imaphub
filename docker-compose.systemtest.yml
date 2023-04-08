@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  imaphub-unittest:
+    build:
+      context: .
+      dockerfile: Dockerfile.systemtest
+    environment:
+      API_URL: "http://host.docker.internal:4001"
