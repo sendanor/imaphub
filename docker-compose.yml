@@ -37,5 +37,5 @@ services:
     - IMAP_USERNAME=alice
     - IMAP_PASSWORD=pass
     - IMAP_MAILBOX=default
-    - HOST=localhost
+    - HOST=0.0.0.0
     - PORT=4001
