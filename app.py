@@ -35,11 +35,6 @@ def get_index():
     return 'ImapHub Ready.'
 
 
-@app.route('/hello')
-def get_hello():
-    return 'Hello world.'
-
-
 @app.route('/v1')
 def get_v1_index():
     return jsonify({

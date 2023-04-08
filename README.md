@@ -45,7 +45,7 @@ curl -i http://localhost:4001/v1/messages
 #### Running Flask in development mode
 
 ```shell
-flask --app app.py --debug run --reload
+flask --app app.py --debug run --reload --host=0.0.0.0 --port=4001
 ```
 
 #### Opening Python venv on Linux/Mac
