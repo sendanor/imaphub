@@ -2,22 +2,28 @@
 
 IMAP to REST API microservice
 
-### Run the server over docker-compose
+### Run the server
 
 ```shell
 docker-compose up --build
 ```
 
-### Run unit tests over docker-compose
+### Run unit tests
 
 ```shell
 docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
 ```
 
-### Run system tests over docker-compose
+### Run system tests
 
 ```shell
 docker-compose -f docker-compose.systemtest.yml up --build --abort-on-container-exit
+```
+
+#### Running in development mode (and reload on changes)
+
+```shell
+docker-compose -f docker-compose.dev.yml up --build
 ```
 
 ### Testing the API manually
@@ -42,12 +48,6 @@ curl -i http://localhost:4001/v1/messages
 
 ### Using Virtual ENV
 
-#### Running Flask in development mode
-
-```shell
-flask --app app.py --debug run --reload --host=0.0.0.0 --port=4001
-```
-
 #### Opening Python venv on Linux/Mac
 
 ```shell
@@ -65,4 +65,10 @@ pip install imaplib
 
 ```shell
 pip freeze > requirements.txt
+```
+
+#### Running Flask in development mode
+
+```shell
+flask --app app.py --debug run --reload --host=0.0.0.0 --port=4001
 ```

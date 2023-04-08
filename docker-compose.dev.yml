@@ -22,11 +22,14 @@ services:
     depends_on:
     - imaphub-smtp
 
-  imaphub-api:
+  imaphub-dev-api:
     restart: "unless-stopped"
-    container_name: imaphub-api
+    container_name: imaphub-dev-api
     build:
       context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - '.:/app/:ro'
     ports:
     - "4001:4001"
     depends_on:
