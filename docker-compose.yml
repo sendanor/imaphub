@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+
+  imaphub-smtp:
+    restart: "unless-stopped"
+    container_name: imaphub-smtp
+    image: mailhog/mailhog:latest
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+    - "1125:1025" # smtp server
+    - "8125:8025" # web ui
+
+  imaphub-imap:
+    image: dovecot/dovecot
+    container_name: imaphub-imap
+#    volumes:
+#    - ./data:/data
+#    environment:
+#    - MAILNAME=example.com
+#    - VIRTUAL_ALIAS_DOMAINS=example.org
+#    - VIRTUAL_MAILBOX_DOMAINS=example.org
+#    - VIRTUAL_MAILBOX_BASE=/data/mail
+#    - VIRTUAL_MAILBOX_MAPS=/etc/postfix/virtual_mailbox_maps
+#    - VIRTUAL_ALIAS_MAPS=/etc/postfix/virtual_alias_maps
+#    - VIRTUAL_UID_MAPS=static:5000
+    ports:
+    - "1143:143"
+    depends_on:
+    - imaphub-smtp
+
+  imaphub-api:
+    container_name: imaphub-api
+    restart: "unless-stopped"
+    build:
+      context: .
+    ports:
+    - "4001:4001"
+    depends_on:
+    - imaphub-smtp
+    - imaphub-imap
+    environment:
+    - IMAP_SERVER=imaphub-imap
+    - IMAP_PORT=1143
+    - IMAP_USERNAME=alice
+    - IMAP_PASSWORD=pass
+    - IMAP_MAILBOX=default
+    - HOST=localhost
+    - PORT=4001

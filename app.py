@@ -5,9 +5,20 @@ import email
 
 app = Flask(__name__)
 
-@app.route('/emails')
-def get_emails():
-    imap_server = imaplib.IMAP4_SSL(os.environ['IMAP_SERVER'])
+@app.route('/')
+def get_index():
+    return 'ImapHub Ready.'
+
+@app.route('/v1')
+def get_v1_index():
+    return jsonify({
+        'server': 'imaphub',
+        'readyStatus': 'READY'
+    })
+
+@app.route('/v1/messages')
+def get_messages():
+    imap_server = imaplib.IMAP4_SSL(os.environ['IMAP_SERVER'], os.environ['IMAP_PORT'])
     imap_server.login(os.environ['IMAP_USERNAME'], os.environ['IMAP_PASSWORD'])
     imap_server.select(os.environ['IMAP_MAILBOX'])
     _, message_ids = imap_server.search(None, 'ALL')
@@ -27,5 +38,4 @@ def get_emails():
     return jsonify(messages)
 
 if __name__ == '__main__':
-    app.run(debug=True, host=os.environ.get('HOST', 'localhost'), port=int(os.environ.get('PORT', 5000)))
-
+    app.run(debug=True, host=os.environ.get('HOST', '0.0.0.0'), port=int(os.environ.get('PORT', 4001)))
