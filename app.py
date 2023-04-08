@@ -73,7 +73,7 @@ def create_message():
         M.close()
         M.logout()
 
-        return jsonify({'message': 'Email created successfully.'})
+        return jsonify({'message': 'Email created successfully.'}), 201
 
     except ConnectionRefusedError as e:
         logging.error(f'Error connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} (SSL: {IMAP_SSL_ENABLED}): {str(e)}')

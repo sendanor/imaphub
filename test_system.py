@@ -20,7 +20,6 @@ class TestIMAPAPI(unittest.TestCase):
             'readyStatus': 'READY'
         })
 
-    @unittest.skip("Out of test scope for now")
     def test_messages(self):
         response = requests.get(f'{self.api_url}/v1/messages')
         messages = response.json()
@@ -33,6 +32,15 @@ class TestIMAPAPI(unittest.TestCase):
         self.assertIn('to', message)
         self.assertIn('date', message)
         self.assertIn('body', message)
+
+    def test_post_message(self):
+        with open('samples/email.eml', 'rb') as f:
+            payload = f.read()
+        f.close()
+        headers = {'Content-Type': 'message/rfc822'}
+        response = requests.post(f'{self.api_url}/v1/messages', data=payload, headers=headers)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), {'message': 'Email created successfully.'})
 
 if __name__ == '__main__':
     unittest.main()
