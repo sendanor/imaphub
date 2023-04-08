@@ -39,6 +39,7 @@ services:
     - imaphub-imap
     - imaphub-smtp
     environment:
+    - LOG_LEVEL=DEBUG
     - IMAP_SSL=true
     - IMAP_SERVER=imaphub-imap
     - IMAP_PORT=993

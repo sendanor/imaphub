@@ -15,8 +15,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY ./test_system.py .
+COPY ./system_test.py .
 COPY ./samples/email.eml ./samples/email.eml
 
 # Run tests
-CMD ["python", "test_system.py"]
+CMD ["python", "system_test.py"]

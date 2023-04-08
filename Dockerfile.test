@@ -14,8 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY ./app.py .
-COPY ./test_app.py .
+COPY ./*.py .
 COPY ./samples/email.eml ./samples/email.eml
 
 # Run tests
