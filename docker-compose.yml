@@ -13,26 +13,17 @@ services:
     - "8125:8025" # web ui
 
   imaphub-imap:
-    image: dovecot/dovecot
+    restart: "unless-stopped"
     container_name: imaphub-imap
-#    volumes:
-#    - ./data:/data
-#    environment:
-#    - MAILNAME=example.com
-#    - VIRTUAL_ALIAS_DOMAINS=example.org
-#    - VIRTUAL_MAILBOX_DOMAINS=example.org
-#    - VIRTUAL_MAILBOX_BASE=/data/mail
-#    - VIRTUAL_MAILBOX_MAPS=/etc/postfix/virtual_mailbox_maps
-#    - VIRTUAL_ALIAS_MAPS=/etc/postfix/virtual_alias_maps
-#    - VIRTUAL_UID_MAPS=static:5000
+    image: dovecot/dovecot
     ports:
     - "1143:143"
     depends_on:
     - imaphub-smtp
 
   imaphub-api:
-    container_name: imaphub-api
     restart: "unless-stopped"
+    container_name: imaphub-api
     build:
       context: .
     ports:
