@@ -1,7 +1,9 @@
 version: '3'
 
 services:
-  imaphub-unittest:
+  imaphub-systemtest:
+    restart: "unless-stopped"
+    container_name: imaphub-systemtest
     build:
       context: .
       dockerfile: Dockerfile.systemtest
