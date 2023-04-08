@@ -31,9 +31,13 @@ services:
     depends_on:
     - imaphub-smtp
     - imaphub-imap
+    links:
+    - imaphub-imap
+    - imaphub-smtp
     environment:
+    - IMAP_SSL=true
     - IMAP_SERVER=imaphub-imap
-    - IMAP_PORT=1143
+    - IMAP_PORT=993
     - IMAP_USERNAME=alice
     - IMAP_PASSWORD=pass
     - IMAP_MAILBOX=default
