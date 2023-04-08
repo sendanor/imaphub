@@ -1,2 +1,3 @@
 # imaphub
-IMAP to REST API
+
+IMAP to REST API microservice
