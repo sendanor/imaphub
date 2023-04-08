@@ -1,25 +1,23 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import imaplib
 import email
 import logging
-import time
+from email.message import EmailMessage
 
 app = Flask(__name__)
 
-
-@app.route('/')
-def get_index():
-    return 'ImapHub Ready.'
-
-
-@app.route('/v1')
-def get_v1_index():
-    return jsonify({
-        'server': 'imaphub',
-        'readyStatus': 'READY'
-    })
-
+IMAP_SSL_ENABLED = os.environ.get('IMAP_SSL', 'true') == 'true'
+IMAP_SERVER = os.environ.get('IMAP_SERVER', 'localhost')
+if IMAP_SSL_ENABLED:
+    DEFAULT_IMAP_PORT = 993
+else:
+    DEFAULT_IMAP_PORT = 143
+IMAP_PORT = int(os.environ.get('IMAP_PORT', DEFAULT_IMAP_PORT))
+IMAP_USERNAME = os.environ.get('IMAP_USERNAME', '')
+IMAP_PASSWORD = os.environ.get('IMAP_PASSWORD', '')
+HOST = os.environ.get('HOST', '0.0.0.0')
+PORT = int(os.environ.get('PORT', 4001))
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -32,27 +30,79 @@ def handle_404(e):
     return jsonify({'error': 'Not found'}), 404
 
 
+@app.route('/')
+def get_index():
+    return 'ImapHub Ready.'
+
+
+@app.route('/hello')
+def get_hello():
+    return 'Hello world.'
+
+
+@app.route('/v1')
+def get_v1_index():
+    return jsonify({
+        'server': 'imaphub',
+        'readyStatus': 'READY'
+    })
+
+@app.route('/v1/messages', methods=['POST'])
+def create_message():
+
+    content_type = request.headers.get('Content-Type')
+
+    if content_type == "application/json":
+        msg = EmailMessage()
+        msg.set_content(request.json.get('body', ''))
+        msg['Subject'] = request.json.get('subject', '')
+        msg['From'] = request.json.get('from', '')
+        msg['To'] = request.json.get('to', '')
+    elif content_type == "message/rfc822":
+        msg = email.message_from_bytes(request.data)
+    else:
+        return jsonify({'error': 'Unsupported media type'}), 415
+
+    try:
+        if IMAP_SSL_ENABLED:
+            logging.info(f'Connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} with SSL')
+            M = imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT)
+        else:
+            logging.info(f'Connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} without SSL')
+            M = imaplib.IMAP4(IMAP_SERVER, IMAP_PORT)
+
+        M.login(IMAP_USERNAME, IMAP_PASSWORD)
+
+        M.select()
+        M.append('INBOX', None, None, msg.as_bytes())
+        M.close()
+        M.logout()
+
+        return jsonify({'message': 'Email created successfully.'})
+
+    except ConnectionRefusedError as e:
+        logging.error(f'Error connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} (SSL: {IMAP_SSL_ENABLED}): {str(e)}')
+        return jsonify({'error': 'Could not connect to IMAP server'}), 500
+
+    except imaplib.IMAP4.error as e:
+        logging.error(f'Error connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} (SSL: {IMAP_SSL_ENABLED}): {str(e)}')
+        return jsonify({'error': 'Could not connect to IMAP server'}), 500
+
+
 @app.route('/v1/messages')
 def get_messages():
-    imap_ssl_enabled = os.environ.get('IMAP_SSL', 'true') == 'true'
-    imap_server = os.environ.get('IMAP_SERVER', 'localhost')
-    if imap_ssl_enabled:
-        default_imap_port = 993
-    else:
-        default_imap_port = 143
-    imap_port = int(os.environ.get('IMAP_PORT', default_imap_port))
 
     try:
         messages = []
 
-        if imap_ssl_enabled:
-            logging.info(f'Connecting to IMAP server {imap_server}:{imap_port} with SSL')
-            M = imaplib.IMAP4_SSL(imap_server, imap_port)
+        if IMAP_SSL_ENABLED:
+            logging.info(f'Connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} with SSL')
+            M = imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT)
         else:
-            logging.info(f'Connecting to IMAP server {imap_server}:{imap_port} without SSL')
-            M = imaplib.IMAP4(imap_server, imap_port)
+            logging.info(f'Connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} without SSL')
+            M = imaplib.IMAP4(IMAP_SERVER, IMAP_PORT)
 
-        M.login(os.environ.get('IMAP_USERNAME', ''), os.environ.get('IMAP_PASSWORD', ''))
+        M.login(IMAP_USERNAME, IMAP_PASSWORD)
 
         M.select()
 
@@ -75,13 +125,13 @@ def get_messages():
         return jsonify(messages)
 
     except ConnectionRefusedError as e:
-        logging.error(f'Error connecting to IMAP server {imap_server}:{imap_port} (SSL: {imap_ssl_enabled}): {str(e)}')
+        logging.error(f'Error connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} (SSL: {IMAP_SSL_ENABLED}): {str(e)}')
         return jsonify({'error': 'Could not connect to IMAP server'}), 500
 
     except imaplib.IMAP4.error as e:
-        logging.error(f'Error connecting to IMAP server {imap_server}:{imap_port} (SSL: {imap_ssl_enabled}): {str(e)}')
+        logging.error(f'Error connecting to IMAP server {IMAP_SERVER}:{IMAP_PORT} (SSL: {IMAP_SSL_ENABLED}): {str(e)}')
         return jsonify({'error': 'Could not connect to IMAP server'}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host=os.environ.get('HOST', '0.0.0.0'), port=int(os.environ.get('PORT', 4001)))
+    app.run(debug=True, host=HOST, port=PORT)
